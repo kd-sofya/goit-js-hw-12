@@ -16,7 +16,6 @@ const perPage = 15;
 
 
 
-
 form.addEventListener('submit', e => {
     e.preventDefault();
 
@@ -93,7 +92,7 @@ form.addEventListener('submit', e => {
         const { height } = galleryItem.getBoundingClientRect();
         
         requestAnimationFrame(() => {
-            window.scrollBy({ top: height * 2, behavior: 'smooth' });
+            window.scrollBy({ top: height * 3, behavior: 'smooth' });
         });
       }
     }

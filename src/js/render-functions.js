@@ -8,7 +8,7 @@ const loadBtn = document.querySelector('.load-btn');
 
 export const createGallery = images => {
     const imgMrkp = images.map(({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) =>
-        `<a href="${largeImageURL}">
+        `<li class="gallery-item"><a href="${largeImageURL}">
         <div class="card">
                 <img class="card-image" src="${webformatURL}" alt="${tags}" width="370" height="334"/>
             <div class="card-body">
@@ -20,7 +20,8 @@ export const createGallery = images => {
             </span>
             </div>
         </div>
-        </a>`
+        </a>
+        </li>`
     )
         .join('');
 
