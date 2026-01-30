@@ -16,113 +16,105 @@ const perPage = 15;
 
 
 
-form.addEventListener('submit', e => {
-    e.preventDefault();
+form.addEventListener('submit', async e => {
+  e.preventDefault();
 
-        const query = input.value.trim();
-    if (!query) {
-        iziToast.error({
-        position: 'topRight',
-        title: 'Error',
-        message: 'Sorry, there are no images matching your search query. Please try again!💔',
-        });
-        return;
-    }
+  const query = input.value.trim();
+  if (!query) {
+    iziToast.error({
+      position: 'topRight',
+      title: 'Error',
+      message: 'Sorry, there are no images matching your search query. Please try again!💔',
+    });
+    return;
+  }
 
-    currentQuery = query;
-    page = 1;
+  currentQuery = query;
+  page = 1;
         
-    hideLoadMoreButton();
-    showLoader();  
-    clearGallery();
-
-    getImagesByQuery(currentQuery, page, perPage)
-        .then(result => {
-            console.log(result);
-            const img = result.hits;
-
-            if (img.length === 0) {
-                
-                setTimeout(() => {  
-                    iziToast.error({
-                    position: 'topRight',
-                    title: 'Error',
-                    message: 'Sorry, there are no images matching your search query. Please try again!💔',
-                });
-                }, 1000);
-                input.value = '';
-                hideLoadMoreButton();
-            } else {
-                
-                setTimeout(() => {  
-                    createGallery(img); 
-                    input.value = '';
-
-                if (img.length === perPage) {
-                    showLoadMoreButton();
-                } else {
-                    hideLoadMoreButton();
-                }
-                }, 1000);
-                // createGallery(img);
-                // console.log(result.data);
-                // console.log(result.data.hits);
-              }
-
-
-        })
-        .catch(error => {
-                iziToast.error({
-                position: 'topRight',
-                message: 'Sorry💔',
-            });
-            console.error(error);
-            })
-
-        .finally(() => {
-            hideLoader();
-            });
-});
-
-
-
-    function scrollLoad() {
-    const galleryItem = document.querySelector('.gallery li');
-    if (galleryItem) {
-        const { height } = galleryItem.getBoundingClientRect();
-        
-        requestAnimationFrame(() => {
-            window.scrollBy({ top: height * 3, behavior: 'smooth' });
-        });
-      }
-    }
-
-
-
-loadBtn.addEventListener('click', () => {
   hideLoadMoreButton();
   showLoader();
-  page += 1;    
+  clearGallery();
+  
 
-  getImagesByQuery(currentQuery, page, perPage)
-    .then(result => {
-      const img = result.hits;
-
-        createGallery(img);
-        scrollLoad();
-
-      if (img.length < perPage) {
-        iziToast.info({
+  try {
+    const result = await getImagesByQuery(currentQuery, page, perPage);
+    const img = result.hits;
+    if (img.length === 0) {
+      setTimeout(() => {
+        iziToast.error({
           position: 'topRight',
-          message: "We're sorry, but you've reached the end of search results.💔",
+          title: 'Error',
+          message: 'Sorry, there are no images matching your search query. Please try again!💔',
         });
-        hideLoadMoreButton();
-      } else {
-        showLoadMoreButton();
-      }
-    })
-    .catch(error => console.error(error))
-    .finally(() => {
-      hideLoader();
+      }, 1000);
+      input.value = '';
+      hideLoadMoreButton();
+    } else {
+      setTimeout(() => {
+        createGallery(img);
+        input.value = '';
+        availableImages(img, perPage);
+
+        if (img.length === perPage) {
+          showLoadMoreButton();
+        } else {
+          hideLoadMoreButton();
+        }
+      }, 1000);
+    }
+  } catch (error) {
+    iziToast.error({
+      position: 'topRight',
+      message: 'Sorry💔',
     });
-});
+    console.error(error);
+  } finally {
+    hideLoader();
+  }
+})
+
+  function availableImages(imeges, perPage) {
+    if (imeges.length < perPage) {
+      iziToast.info({
+        position: 'topRight',
+        message: "We're sorry, but you've reached the end of search results.💔",
+      });
+      hideLoadMoreButton();
+    } else {
+      showLoadMoreButton();
+    }
+  }
+
+loadBtn.addEventListener('click', async () => { 
+  hideLoadMoreButton();
+  showLoader();
+  page += 1;
+
+  try {
+    const result = getImagesByQuery(currentQuery, page, perPage);
+    const img = result.hits;
+    createGallery(img);
+    scrollLoad();
+    availableImages(img, perPage);
+  } catch (error) {
+    iziToast.error({
+      position: 'topRight',
+      message: 'Sorry💔',
+    });
+    console.error(error);
+  } finally {
+    hideLoader();
+  }
+})
+  
+  function scrollLoad() {
+    const galleryItem = document.querySelector('.gallery li');
+    if (galleryItem) {
+      const { height } = galleryItem.getBoundingClientRect();
+        
+      requestAnimationFrame(() => {
+        window.scrollBy({ top: height * 2, behavior: 'smooth' });
+      });
+    }
+  }
